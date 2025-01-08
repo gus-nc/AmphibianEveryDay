@@ -1,11 +1,11 @@
 # Import necessary modules
 import os
-from dotenv import load_dotenv
 import pandas as pd
 import random
-# Import atproto
-from atproto import Client
+import requests
+from bs4 import BeautifulSoup
 
+# Data Functions
 # Function to load previously sampled species from the file
 def load_sampled_spp(sampled_spp_file, possible_spp_file):
     with open(sampled_spp_file, "r") as file:
@@ -32,7 +32,6 @@ def unique_random_spp(remaining_spp, sampled_spp_file, number_file):
         file.write(f"{number}\n")
     return random_sp, number
 
-
 # Define filenames for funtions sampling
 sampled_spp_file = "bsky_fauna_bot/sampled_spp.txt"
 possible_spp_file = "bsky_fauna_bot/possible_spp.txt"
@@ -54,16 +53,29 @@ iucn_status = df.iloc[random_sp].loc['iucn']
 common_name = df.iloc[random_sp].loc['common_name']
 
 # Structure the Post text
+post = f"#{number} Today species, {sp_name}, commonly called {common_name} is considered {iucn_status} by IUCN. "
 
-post = f"#{spp_number} Today species, {sp_name}, commonly called {common_name} is considered {iucn_status} by IUCN. "
 
-# Load the .env file and get the login for API
-load_dotenv()
-BLUESKY_USER = os.getenv("BLUESKY_USER")
-BLUESKY_PASS = os.getenv("BLUESKY_PASS")
+# Dowload Imagee
 
-# Connect to Bluesky
-bs_client = Client()
-profile = bs_client.login(BLUESKY_USER, BLUESKY_PASS)
-response = bs_client.send_post("Posting this from atproto! New project to come in 2025...")
-print(response)
+# Send an HTTP GET request to the URL
+response = requests.get(web_id)
+if response.status_code == 200:
+    # Parse the HTML content
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Find the <img> tag
+    img_tag = soup.find("img", alt=sp_name)
+    if img_tag:
+        # Extract the src attribute from the <img> tag
+        img_src = img_tag['src']
+        print(f"Image Source URL: {img_src}")
+        img_data = requests.get(img_src).content
+        with open('today_sp.jpg', 'wb') as handler:
+            handler.write(img_data)
+
+    else:
+        print("No <img> tag with 'src' found inside the <a> tag.")
+
+else:
+    print(f"Failed to access the webpage. Status code: {response.status_code}")
