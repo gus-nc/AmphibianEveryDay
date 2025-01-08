@@ -40,7 +40,11 @@ random_sp = unique_random_spp(remaining_spp, sampled_spp_file)
 df = pd.read_csv('bsky_fauna_bot/amphib_names.txt', sep='\t')
 
 # Retriece the information for the selected species
-sp_name = (df.iloc[random_sp])
+sp_name = df.iloc[random_sp].loc['genus'] + " " + df.iloc[random_sp].loc['species']
+web_id = df.iloc[random_sp].loc['uri/guid']
+iucn_status = df.iloc[random_sp].loc['iucn']
+common_name = df.iloc[random_sp].loc['common_name']
+
 
 # Load the .env file and get the login for API
 load_dotenv()
