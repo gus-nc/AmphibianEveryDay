@@ -16,25 +16,33 @@ def load_sampled_spp(sampled_spp_file, possible_spp_file):
     return sampled_spp, remaining_spp
 
 # Function to select a new unique species
-def unique_random_spp(remaining_spp, sampled_spp_file):
+def unique_random_spp(remaining_spp, sampled_spp_file, number_file):
     # Generate a species that isn't in sampled_spp
     random_sp = random.choice(list(remaining_spp))
+    with open(number_file, "r") as file:
+        number = int(file.read().strip())
+        number = number + 1
 
     # Add the new species to possible_spp file
     with open(sampled_spp_file, "a") as file:
         file.write(f"{random_sp}\n")
-    return random_sp
+
+    # Track species number
+    with open(number_file, "w") as file:
+        file.write(f"{number}\n")
+    return random_sp, number
 
 
 # Define filenames for funtions sampling
 sampled_spp_file = "bsky_fauna_bot/sampled_spp.txt"
 possible_spp_file = "bsky_fauna_bot/possible_spp.txt"
+number_file = "bsky_fauna_bot/iteration_number.txt"
 
 # Retrieve sampled and remaining spp IDs
 sampled_spp, remaining_spp = load_sampled_spp(sampled_spp_file, possible_spp_file)
 
 # Sample Unique Species
-random_sp = unique_random_spp(remaining_spp, sampled_spp_file)
+random_sp, number = unique_random_spp(remaining_spp, sampled_spp_file, number_file)
 
 # Read the tab-delimited file into a DataFrame
 df = pd.read_csv('bsky_fauna_bot/amphib_names.txt', sep='\t')
@@ -45,6 +53,9 @@ web_id = df.iloc[random_sp].loc['uri/guid']
 iucn_status = df.iloc[random_sp].loc['iucn']
 common_name = df.iloc[random_sp].loc['common_name']
 
+# Structure the Post text
+
+post = f"#{spp_number} Today species, {sp_name}, commonly called {common_name} is considered {iucn_status} by IUCN. "
 
 # Load the .env file and get the login for API
 load_dotenv()
