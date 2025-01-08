@@ -2,6 +2,8 @@
   on:
     schedule:
       - cron: 0 18 * * *
+    workflow_dispatch:
+      
   jobs:
     post-to-bluesky:
       runs-on: ubuntu-latest
