@@ -1,0 +1,22 @@
+name: "Post to Bluesky"
+
+on: workflow_dispatch
+# on:
+#   schedule:
+#     - cron: "0 18 * * *"
+
+jobs:
+  runs-on: ubuntu-latest
+  steps:
+    # Step 1: Check out the repository
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - run: python3 main.py
+    - run: python3 create_bsky_post.py --text resources/today_text.txt --image today_sp.jpg
+      env:
+        BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+        BSKY_PASSWORD: ${{ secrets.BSKY_PASSWORD }}
