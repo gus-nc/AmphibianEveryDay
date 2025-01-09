@@ -1,4 +1,24 @@
 #!/usr/bin/env python3
+"""
+This script allows users to create and upload posts to the bsky.app platform.
+Functions:
+    bsky_login_session(pds_url: str, handle: str, password: str) -> Dict:
+        Logs in to the bsky.app platform and returns a session dictionary.
+    parse_urls(text: str) -> List[Dict]:
+        Parses URLs from the given text and returns a list of dictionaries containing URL spans.
+    upload_file(pds_url, access_token, filename, img_bytes) -> Dict:
+        Uploads a file to the bsky.app platform and returns a dictionary containing the blob information.
+    upload_image(pds_url: str, access_token: str, image_path: str, alt_text: str) -> Dict:
+        Uploads an image to the bsky.app platform and returns a dictionary containing the image information.
+    create_post(args):
+        Creates and uploads a post to the bsky.app platform using the provided arguments.
+    main():
+        Parses command-line arguments and initiates the post creation process.
+Usage:
+    Run this script from the command line with the appropriate arguments to create and upload a post to the bsky.app platform.
+Example:
+    python create_bsky_post.py "Your post text file" --image "path/to/image.jpg"
+"""
 
 import os
 import re

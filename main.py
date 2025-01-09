@@ -1,3 +1,5 @@
+# Description: This script samples a species from a list of amphibians and retrieves information from the AmphibiaWeb website.
+
 # Import necessary modules
 import pandas as pd
 import random
