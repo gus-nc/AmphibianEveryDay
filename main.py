@@ -28,8 +28,6 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-
-# Define Data Functions
 # Function to load previously sampled species from the file
 def load_sampled_spp(sampled_spp_file, possible_spp_file):
     with open(sampled_spp_file, "r") as file:
@@ -64,9 +62,10 @@ number_file = "resources/iteration_number.txt"
 # Read the tab-delimited file into a DataFrame
 df = pd.read_csv('resources/amphib_names.txt', sep='\t')
 
-
+# Set the maximum number of attempts to sample a species
 attempts = 0
 max_attempts = 10
+
 while attempts < max_attempts:
     check = 1
     attempts = attempts + 1
@@ -113,7 +112,7 @@ while attempts < max_attempts:
             img_data = requests.get(img_src).content
             with open('resources/today_sp.jpg', 'wb') as handler:
                 handler.write(img_data)
-
+            print("Image downloaded successfully.")
         else:
             print("No <img> tag with 'src' found inside the <a> tag.")
             check = 0
