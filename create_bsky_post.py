@@ -20,17 +20,17 @@ Example:
     python create_bsky_post.py "Your post text file" --image "path/to/image.jpg"
 """
 
+# Import necessary modules
 import os
 import re
 import sys
 import json
 import argparse
+import requests
 from PIL import Image
 from typing import Dict, List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-
-import requests
 from bs4 import BeautifulSoup
 
 def bsky_login_session(pds_url: str, handle: str, password: str) -> Dict:

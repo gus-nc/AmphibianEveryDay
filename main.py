@@ -23,9 +23,9 @@ Execution:
 """
 
 # Import necessary modules
-import pandas as pd
 import random
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 
 
