@@ -21,18 +21,21 @@ Example:
 """
 
 # Import necessary modules
+
 import os
 import re
 import sys
 import json
 import argparse
 import requests
+import io
 from PIL import Image
 from typing import Dict, List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
+# Function to log in to the bsky.app platform
 def bsky_login_session(pds_url: str, handle: str, password: str) -> Dict:
     resp = requests.post(
         pds_url + "/xrpc/com.atproto.server.createSession",
@@ -41,6 +44,7 @@ def bsky_login_session(pds_url: str, handle: str, password: str) -> Dict:
     resp.raise_for_status()
     return resp.json()
 
+# Function to parse URLs from the text
 def parse_urls(text: str) -> List[Dict]:
     spans = []
     # partial/naive URL regex based on: https://stackoverflow.com/a/3809435
@@ -57,7 +61,7 @@ def parse_urls(text: str) -> List[Dict]:
         )
     return spans
 
-
+# Function to upload a file to the bsky.app platform
 def upload_file(pds_url, access_token, filename, img_bytes) -> Dict:
     suffix = filename.split(".")[-1].lower()
     mimetype = "application/octet-stream"
@@ -68,7 +72,16 @@ def upload_file(pds_url, access_token, filename, img_bytes) -> Dict:
     elif suffix in ["webp"]:
         mimetype = "image/webp"
 
-    # WARNING: a non-naive implementation would strip EXIF metadata from JPEG files here by default
+    # Strip EXIF metadata from JPEG files
+    if suffix in ["jpeg", "jpg"]:
+        with Image.open(io.BytesIO(img_bytes)) as img:
+            data = list(img.getdata())
+            img_without_exif = Image.new(img.mode, img.size)
+            img_without_exif.putdata(data)
+            buffer = io.BytesIO()
+            img_without_exif.save(buffer, format="JPEG")
+            img_bytes = buffer.getvalue()
+
     resp = requests.post(
         pds_url + "/xrpc/com.atproto.repo.uploadBlob",
         headers={
@@ -80,7 +93,7 @@ def upload_file(pds_url, access_token, filename, img_bytes) -> Dict:
     resp.raise_for_status()
     return resp.json()["blob"]
 
-
+# Function to upload an image to the bsky.app platform
 def upload_image(
     pds_url: str, access_token: str, image_path: str, alt_text: str
 ) -> Dict:
@@ -108,7 +121,7 @@ def upload_image(
         "images": images,
     }
 
-
+# Function to create and upload a post to the bsky.app platform
 def create_post(args):
     session = bsky_login_session(args.pds_url, args.handle, args.password)
 
@@ -171,7 +184,7 @@ def create_post(args):
     print(json.dumps(resp.json(), indent=2))
     resp.raise_for_status()
 
-
+# Main function to parse command-line arguments and initiate the post creation process
 def main():
     parser = argparse.ArgumentParser(description="bsky.app post upload")
     parser.add_argument(
