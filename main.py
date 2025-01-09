@@ -1,4 +1,26 @@
-# Description: This script samples a species from a list of amphibians and retrieves information from the AmphibiaWeb website.
+"""
+main.py
+
+This script samples a species from a list of amphibians and retrieves information from the AmphibiaWeb website.
+
+Functions:
+    load_sampled_spp(sampled_spp_file, possible_spp_file):
+        Loads previously sampled species from a file and returns the sampled and remaining species.
+
+    unique_random_spp(remaining_spp, sampled_spp_file, number_file):
+        Selects a new unique species that hasn't been sampled before, updates the sampled species file, and tracks the species number.
+
+Variables:
+    sampled_spp_file (str): Path to the file containing sampled species IDs.
+    possible_spp_file (str): Path to the file containing possible species IDs.
+    number_file (str): Path to the file containing the iteration number.
+    df (DataFrame): DataFrame containing amphibian species information.
+
+Execution:
+    The script attempts to sample a unique species up to a maximum number of attempts. For each attempt, it retrieves the species information,
+    structures a post text, and downloads an image of the species from the AmphibiaWeb website.
+    If the image is successfully downloaded, the process stops; otherwise, it retries with a new species.
+"""
 
 # Import necessary modules
 import pandas as pd
