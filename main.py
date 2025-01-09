@@ -62,14 +62,14 @@ while attempts < max_attempts:
     # Structure the Post text
     if isinstance(iucn_status, str):
         if isinstance(common_name, str):
-            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN."
+            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id}"
         else:
-            post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN."
+            post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN. For more, check {web_id}"
     else:
         if isinstance(common_name, str):
-            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN."
+            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id}"
         else:
-            post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN."
+            post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN. For more, check {web_id}"
     with open("resources/today_text.txt", "w") as file:
             file.write(f"{post}\n")
 

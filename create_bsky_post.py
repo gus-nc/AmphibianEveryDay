@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import json
 import argparse
-from typing import Dict
+from PIL import Image
+from typing import Dict, List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
@@ -18,6 +20,22 @@ def bsky_login_session(pds_url: str, handle: str, password: str) -> Dict:
     )
     resp.raise_for_status()
     return resp.json()
+
+def parse_urls(text: str) -> List[Dict]:
+    spans = []
+    # partial/naive URL regex based on: https://stackoverflow.com/a/3809435
+    # tweaked to disallow some training punctuation
+    url_regex = rb"[$|\W](https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*[-a-zA-Z0-9@%_\+~#//=])?)"
+    text_bytes = text.encode("UTF-8")
+    for m in re.finditer(url_regex, text_bytes):
+        spans.append(
+            {
+                "start": m.start(1),
+                "end": m.end(1),
+                "url": m.group(1).decode("UTF-8"),
+            }
+        )
+    return spans
 
 
 def upload_file(pds_url, access_token, filename, img_bytes) -> Dict:
@@ -54,8 +72,17 @@ def upload_image(
         raise Exception(
             f"image file size too large. 1000000 bytes maximum, got: {len(img_bytes)}"
         )
+
+    # Open the image to get dimensions
+    with Image.open(image_path) as img:
+        width, height = img.size
+    
     blob = upload_file(pds_url, access_token, image_path, img_bytes)
-    images.append({"alt": alt_text or "", "image": blob})
+    images.append({
+        "alt": alt_text or "",
+        "image": blob,
+        "aspectRatio": {"width": width, "height": height},
+    })
     return {
         "$type": "app.bsky.embed.images",
         "images": images,
@@ -75,18 +102,39 @@ def create_post(args):
         "createdAt": now,
         "langs": ["en-US"]
     }
+    # Parse and link the URL via RichText
+    urls = parse_urls(args.text)
+    if urls:
+        # Embed the first parsed URL in the "facets" field (if rich text is supported)
+        post["facets"] = []
+        for url in urls:
+            post["facets"].append(
+                {
+                    "index": {
+                        "byteStart": url["start"],
+                        "byteEnd": url["end"]
+                    },
+                    "features": [
+                        {
+                            "$type": "app.bsky.richtext.facet#link",
+                            "uri": url["url"]
+                        }
+                    ]
+                }
+            )
 
     # Image upload
     if args.image:
         # Assuming `args.image` is a list of file paths to image files
         image_url = upload_image(args.pds_url, session["accessJwt"], "resources/today_sp.jpg", f"{args.text}")["images"]
-        
+
         # Embed images in the post
         post["embed"] = {
             "$type": "app.bsky.embed.images",
-            "images": image_url
+            "images": image_url,
         }
     
+
     print("creating post:", file=sys.stderr)
     print(json.dumps(post, indent=2), file=sys.stderr)
 
