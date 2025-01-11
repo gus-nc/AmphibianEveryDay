@@ -21,7 +21,7 @@
         - name: Run main script
           run: python3 main.py
         - name: Create and post to bluesky
-          run: python3 create_bsky_post.py resources/today_text.txt --image
+          run: python3 sky_post_generator.py resources/today_text.txt --image
             today_sp.jpg
           env:
             ATP_AUTH_HANDLE: ${{ secrets.ATP_AUTH_HANDLE }}
