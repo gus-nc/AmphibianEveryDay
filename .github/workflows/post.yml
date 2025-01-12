@@ -19,7 +19,7 @@
           run: pip install -r requirements.txt
         
         - name: Run main script
-          run: python3 main.py
+          run: python3 data_fetcher.py
         - name: Create and post to bluesky
           run: python3 bsky_post_generator.py resources/today_text.txt --image today_sp.jpg
           env:
