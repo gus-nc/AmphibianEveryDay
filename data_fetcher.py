@@ -27,6 +27,7 @@ import random
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from lxml import etree
 
 # Function to load previously sampled species from the file
 def load_sampled_spp(sampled_spp_file, possible_spp_file):
@@ -69,6 +70,7 @@ max_attempts = 10
 while attempts < max_attempts:
     check = 1
     attempts = attempts + 1
+    print(f"Attempt {attempts}")
     # Retrieve sampled and remaining spp IDs
     sampled_spp, remaining_spp = load_sampled_spp(sampled_spp_file, possible_spp_file)
 
@@ -82,49 +84,108 @@ while attempts < max_attempts:
     common_name = df.iloc[random_sp].loc['common_name']
     print(f"species selected {random_sp} {sp_name}")
 
-    # Structure the Post text
-    if isinstance(iucn_status, str):
-        if isinstance(common_name, str):
-            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id}"
-        else:
-            post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN. For more, check {web_id}"
-    else:
-        if isinstance(common_name, str):
-            post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id}"
-        else:
-            post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN. For more, check {web_id}"
-    with open("resources/today_text.txt", "w") as file:
-            file.write(f"{post}\n")
-
     # Dowload Image
     # Send an HTTP GET request to the URL
     response = requests.get(web_id)
+    # Check for an Image
     if response.status_code == 200:
         # Parse the HTML content
         soup = BeautifulSoup(response.text, "html.parser")
 
         # Find the <img> tag
-        img_tag = soup.find("img", alt=sp_name)
+        img_tag = soup.find("img", alt = sp_name)
         if img_tag:
             # Extract the src attribute from the <img> tag
             img_src = img_tag['src']
-            print(f"Image Source URL: {img_src}")
-            img_data = requests.get(img_src).content
-            with open('resources/today_sp.jpg', 'wb') as handler:
-                handler.write(img_data)
-            print("Image downloaded successfully.")
+            print(f"Image URL: {img_src}")
         else:
             print("No <img> tag with 'src' found inside the <a> tag.")
             check = 0
+        
+        # Get the calphotos image bank
+        if check == 1:
+            # Send an HTTP GET request for the next URL
+            # XPath to locate the href tag
+            tree = etree.HTML(str(soup))
+            xpath_expression = f'//img[@alt="{sp_name}"]/parent::a'
+            a_tag = tree.xpath(xpath_expression)
 
+            # Extract the href attribute
+            if a_tag and 'href' in a_tag[0].attrib:
+                href = a_tag[0].attrib['href']
+                print(f"Step 1: URL {href}")
+            else:
+                check = 0
+                print("Step 1: No matching <a> tag found.")
+            
+            if check == 1:
+                response = requests.get(href)
+                if response.status_code == 200:
+                    # Parse the HTML content again
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    tree = etree.HTML(str(soup))
+
+                    # XPath to locate the href tag in High Resolution
+                    xpath_expression = f'//img[@alt="{sp_name}"]/parent::a'
+                    a_tag = tree.xpath(xpath_expression)
+
+                    # Extract the href attribute
+                    if a_tag and 'href' in a_tag[0].attrib:
+                        href2 = a_tag[0].attrib['href']
+                        print(f"Step 2: URL https://calphotos.berkeley.edu/{href2}")
+                    else:
+                        check = 0
+                        print("Step 2: No matching <a> tag found.")
+                    
+                    if check == 1:
+                        response = requests.get(f"https://calphotos.berkeley.edu/{href2}")
+                        if response.status_code == 200:
+                            soup = BeautifulSoup(response.text, "html.parser")
+                            # Find the <img> tag
+                            img_tag = soup.find("img", alt = sp_name)
+                            if img_tag:
+                                # Extract the src attribute from the <img> tag
+                                img_src = img_tag['src']
+                                # Send an HTTP GET request for the image URL
+                                img_data = requests.get(f"https://calphotos.berkeley.edu/{img_src}").content
+                                with open('resources/today_sp.jpg', 'wb') as handler:
+                                    handler.write(img_data)
+                                print(f"Final Image downloaded successfully: https://calphotos.berkeley.edu/{img_src}")
+                                # Parse the HTML using etree
+                                tree = etree.HTML(str(soup))
+                                # XPath to locate the <td> containing the copyright info
+                                xpath_expression = '//td[contains(text(), "©")]'
+                                # Locate the <td> tag
+                                copyright_tag = tree.xpath(xpath_expression)
+                                copyright_text = copyright_tag[0].text.strip()
+                                print(f"Copyright: {copyright_text}")
+                            else:
+                                print("No <img> tag with 'src' found inside the <a> tag.")
+                                check = 0
     else:
         print(f"Failed to access the webpage. Status code: {response.status_code}")
         check = 0
-
+        
     if check == 1:
+        # Structure the Post text
+        if isinstance(iucn_status, str):
+            if isinstance(common_name, str):
+                post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+            else:
+                post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+        else:
+            if isinstance(common_name, str):
+                post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+            else:
+                post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+        with open("resources/today_text.txt", "w") as file:
+                file.write(f"{post}\n")
         break
+
     else: 
         print("trying a new species")
+
+    
 
 if attempts == max_attempts:
     print("Maximum attempts reached. Exiting.")
