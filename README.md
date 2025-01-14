@@ -9,7 +9,7 @@ This bot is located at [@amphibianeveryday.bsky.social](https://bsky.app/profile
 
 #### Schedule (not ready yet!)
 
-The schedule is controlled by the GitHub Actions workflow in [./.github/workflows/post.yml](./.github/workflows/post.yml). The [schedule trigger](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule) uses cron syntax to schedule when the workflow runs and your bot posts. [Crontab Guru](https://crontab.guru/) is a good way to visualise it.
+The posts are run locally every day. I want to automate it every dat, but hosts like [pythonanywhere](https://www.pythonanywhere.com/) do not provide wide acess to free account to put online requests. 
 
 New Species every day at 18 PST.
 
