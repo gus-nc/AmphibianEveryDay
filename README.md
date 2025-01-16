@@ -20,9 +20,6 @@ The repository is organized as follows:
 
 ```
 AmphibianEveryDay/
-├── .github/
-│   └── workflows/
-│       └── post.yml
 ├── resources
 │   └── amphib_names.txt
 │   └── iteration_numbers.txt
@@ -46,8 +43,6 @@ AmphibianEveryDay/
 - `README.md`: This file.
 - `requirements.txt`: Lists the Python dependencies.
 - `resources/`: Contains the database and the files that keep track of the species and post informations
-- `.github/workflows/`: Contains GitHub Actions workflows.
-    - `post.yml`: Workflow file for scheduling posts.
 
 
 ## How It Works
