@@ -82,6 +82,8 @@ while attempts < max_attempts:
     web_id = df.iloc[random_sp].loc['uri/guid']
     iucn_status = df.iloc[random_sp].loc['iucn']
     common_name = df.iloc[random_sp].loc['common_name']
+    if len(common_name) > 45:
+        common_name =  common_name[:40] + "..."
     print(f"species selected {random_sp} {sp_name}")
 
     # Dowload Image
