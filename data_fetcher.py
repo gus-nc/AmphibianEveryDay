@@ -83,8 +83,8 @@ while attempts < max_attempts:
     iucn_status = df.iloc[random_sp].loc['iucn']
     common_name = df.iloc[random_sp].loc['common_name']
     if isinstance(common_name, str):
-        if len(common_name) > 45:
-            common_name =  common_name[:40] + "..."
+        if len(common_name) > 55:
+            common_name =  common_name[:52] + "..."
     print(f"species selected {random_sp} {sp_name}")
 
     # Dowload Image
@@ -173,14 +173,14 @@ while attempts < max_attempts:
         # Structure the Post text
         if isinstance(iucn_status, str):
             if isinstance(common_name, str):
-                post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+                post = f"#{number} Today species {sp_name}, commonly called {common_name}, is currently not evaluated by IUCN. For more, check {web_id} Copyright:{copyright_text}"
             else:
-                post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+                post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN. For more, check {web_id} Copyright:{copyright_text}"
         else:
             if isinstance(common_name, str):
                 post = f"#{number} Today species {sp_name}, commonly called {common_name}, is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
             else:
-                post = f"#{number} Today species {sp_name} is currently not evaluated by IUCN. For more, check {web_id} Copyright:{copyright_text}"
+                post = f"#{number} Today species {sp_name} is considered {iucn_status} by IUCN. For more, check {web_id} Copyright:{copyright_text}"
         with open("resources/today_text.txt", "w") as file:
                 file.write(f"{post}\n")
         break
